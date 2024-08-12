@@ -24,3 +24,7 @@ void item_set_nome(ITEM* item, char* nome){
 char* item_get_nome(ITEM* item){
     return item->nome;
 }
+void item_remove_self(ITEM** item_pointer){
+    *item_pointer = NULL;
+    free(*item_pointer);
+}

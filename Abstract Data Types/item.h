@@ -8,5 +8,6 @@
     int item_get_id(ITEM*item);
     void item_set_nome(ITEM*item, char* nome);
     char* item_get_nome(ITEM*item);
+    void item_remove_self(ITEM**item);
 
 #endif
