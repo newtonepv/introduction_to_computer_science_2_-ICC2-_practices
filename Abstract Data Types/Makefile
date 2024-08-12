@@ -8,4 +8,4 @@ gerarMain.o:
 	gcc -c main.c
 
 clean:
-	rm *.o
+	rm *.o exe
