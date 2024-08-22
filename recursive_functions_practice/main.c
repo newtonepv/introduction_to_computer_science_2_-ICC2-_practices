@@ -1,4 +1,4 @@
-#include <stdio.h>
+/*#include <stdio.h>
 #include <stdlib.h>
 
 
@@ -22,4 +22,4 @@ int main(void){
     v[2]=2;
 
     return 0;
-}
+}*/
