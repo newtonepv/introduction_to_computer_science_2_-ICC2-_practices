@@ -1,5 +1,5 @@
 all: compile
-	gcc pilha.o item.o main.o -o exe -std=c99 -Wall
+	gcc -o pilha.o item.o main.o exe -std=c99 -Wall
 
 run:
 	./exe
