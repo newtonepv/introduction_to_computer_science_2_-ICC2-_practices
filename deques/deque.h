@@ -21,7 +21,7 @@ ITEM* deque_remover_fim(DEQUE* deque);
 ITEM* deque_primeiro(DEQUE* deque);
 ITEM* deque_ultimo(DEQUE* deque);
 
-int deque_contar(DEQUE* deque);
+int deque_tamanho(DEQUE* deque);
 bool deque_vazia(DEQUE* deque);
 bool deque_cheia(DEQUE* deque);
 

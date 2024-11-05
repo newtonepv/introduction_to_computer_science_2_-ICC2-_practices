@@ -1,8 +1,9 @@
 #include "item.h"
-#include "Pilha.h"
+#include "pilha.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+
 typedef struct no NO;
 struct no{
     ITEM* item;
