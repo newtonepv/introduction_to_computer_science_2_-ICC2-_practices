@@ -100,10 +100,14 @@ int ab_estritamente_binaria (AB *T){
     return 0;
 }
 
+
+
 int busca_no_errado(NO* no){
     if(no==NULL){
-        return 0;
+        return 0;//caso eu tiver chamado a função em um nó nulo, pra nao ter que ficar verificando antes de chamar só assumo que esse esta certo
     }
+
+
     if(no->esquerda!=NULL){
         if(item_get_chave(no->esquerda->item) > item_get_chave(no->item)){
             return 1;//achou o no errado
@@ -114,6 +118,8 @@ int busca_no_errado(NO* no){
             return 1;//achou o no errado
         }
     }
+
+
     //se esse nao ta errado ele procura nos de baixo
     if(busca_no_errado(no->esquerda)==1){
         return 1;
@@ -124,6 +130,11 @@ int busca_no_errado(NO* no){
     //se ano achou, ele retorna falso
     return false;
 }
+
+
+
+
+
 int ab_checar_busca (AB *T){
     if(T!=NULL){
         return busca_no_errado(T->raiz);
