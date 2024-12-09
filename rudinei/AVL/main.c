@@ -15,12 +15,14 @@ int main(){
     AVL* avl = avl_criar();
     inserir_na_avl(avl,30);
     inserir_na_avl(avl,15);
+    inserir_na_avl(avl,20);
     inserir_na_avl(avl,45);
     inserir_na_avl(avl,45);
     inserir_na_avl(avl,35);
-    //debug_printar_pos_ordem(avl);
+    debug_printar_pos_ordem(avl);
     //debug_printar_balanceamento_pos_ordem(avl);
     //calcular_balanceamento(avl);
     //debug_achar_no(avl,45);
+    //avl_remover(avl,35);
     return 0;
 }

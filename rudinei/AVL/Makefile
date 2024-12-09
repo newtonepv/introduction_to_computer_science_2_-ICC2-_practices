@@ -1,7 +1,7 @@
 run: all
 	./exe
 
-all:item avl main
+all:clean item avl main
 	gcc item.c avl.c main.c -o exe
 
 item:

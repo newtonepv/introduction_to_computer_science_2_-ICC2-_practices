@@ -11,4 +11,5 @@
     void debug_printar_balanceamento_pos_ordem(AVL* avl);
     void debug_avl_trocar_30_com_45(AVL* avl);
     bool debug_achar_no(AVL* avl,int n);
+    //bool avl_remover(AVL* avl, int n);
 #endif

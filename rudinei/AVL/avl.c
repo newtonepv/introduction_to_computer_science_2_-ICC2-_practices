@@ -9,6 +9,7 @@ struct no{
     NO* esquerda;
     ITEM* item;
     int balanceamento;
+    int altura;
 };
 
 struct avl{
@@ -18,49 +19,192 @@ struct avl{
 NO* no_criar(ITEM* i){
     NO* no = malloc(sizeof(NO));
     no->balanceamento = 0;
+    no->altura = 0;
     no->item = i;
     no->direita=NULL;
     no->esquerda=NULL;
     return no;
 }
 
+void no_apagar(NO** no){
+    item_apagar((*no)->item);
+    free(*no);
+    *no = NULL;
+
+}
 AVL* avl_criar(){
     AVL* avl = malloc(sizeof(AVL));
     avl->raiz=NULL;
-    printf("\n[DEBUG] criar\n");
+    //printf("\n[DEBUG] criar\n");
     return avl;
 }
 
-bool inserir_recursiva(NO** raiz,ITEM* i){
+int maximo(int n1, int n2){
+    if(n1>n2){
+        return n1;
+    }
+    return n2;
+}
+int altura(NO* no){
+    if(no==NULL){
+        return -1;
+    }
+    return no->altura;
+}
+NO** inserir_recursiva(NO** raiz ,ITEM* i){
     if(*raiz==NULL){
         *raiz = no_criar(i);
-        printf("[DEBUG] inseriu %d\n", item_get_chave(i));
+        //printf("[DEBUG] inseriu %d\n", item_get_chave(i));
         (*raiz)->balanceamento=0;
-        return true;
-    }
-    if(item_get_chave((*raiz)->item)>item_get_chave(i)){
-        if(inserir_recursiva(&((*raiz)->esquerda),i)){
-            (*raiz)->balanceamento+=1;
-            return true;
+        (*raiz)->altura=0;
+        printf("botou o %d\n", item_get_chave(i));
+        return NULL; //nao ta desbalanceado
+
+    }else if(item_get_chave((*raiz)->item)>item_get_chave(i)){
+        NO** mais_jov_desb = inserir_recursiva(&((*raiz)->esquerda),i);
+
+        int alturae = altura((*raiz)->esquerda);
+        int alturad = altura((*raiz)->direita);
+
+        (*raiz)->altura=1+maximo(alturae,alturad);
+        (*raiz)->balanceamento = alturae-alturad;
+
+        if(mais_jov_desb == NULL){
+            if((*raiz)->balanceamento>1||(*raiz)->balanceamento<-1){
+                return raiz;
+            }
         }
-    }
-    if(item_get_chave((*raiz)->item)<item_get_chave(i)){
-        if(inserir_recursiva(&((*raiz)->direita),i)){
-            (*raiz)->balanceamento-=1;
-            return true;
+        return mais_jov_desb;
+        
+    }else if(item_get_chave((*raiz)->item)<item_get_chave(i)){
+        NO** mais_jov_desb = inserir_recursiva(&(*raiz)->direita,i);
+        int alturae = altura((*raiz)->esquerda);
+        int alturad = altura((*raiz)->direita);
+
+        (*raiz)->altura = 1+maximo(alturae, alturad);
+        (*raiz)->balanceamento = alturae-alturad;
+        if(mais_jov_desb==NULL){
+            if((*raiz)->balanceamento>1||(*raiz)->balanceamento<-1){
+                return raiz;
+            }
         }
+        return mais_jov_desb;
+    }else{
+        printf("[DEBUG] ja tem o numero %d\n", item_get_chave(i));
+        return NULL;
     }
-    printf("[DEBUG] ja tem o numero %d\n", item_get_chave(i));
-    return false;
+}
+
+NO* rotacao_direita(NO** r){
+    NO* aux = (*r);
+    (*r)=(*r)->esquerda;
+    aux->esquerda = (*r)->direita;
+    (*r)->direita = aux;
+    return *r;
+}
+
+NO* rotacao_esquerda(NO** r){
+    NO* aux = *r;
+    *r = (*r)->direita;
+    aux->direita = (*r)->esquerda;
+    (*r)->esquerda = aux;
+    return *r;
 }
 
 bool avl_inserir(AVL* avl, ITEM* i){
     if(avl!=NULL){
-        return inserir_recursiva(&(avl->raiz),i);
+        NO** mais_jov_desb = inserir_recursiva(&(avl->raiz),i);
+        
+
+        if(mais_jov_desb){
+            if((*mais_jov_desb)->balanceamento>0){
+                printf("[DEBUG] mais jovem desbalanceado e o %d, fv = %d\n", item_get_chave((*mais_jov_desb)->item),(*mais_jov_desb)->balanceamento);
+                if((*mais_jov_desb)->esquerda->balanceamento>=0){
+
+                    (*mais_jov_desb) = rotacao_direita(mais_jov_desb);
+
+                }else if((*mais_jov_desb)->esquerda->balanceamento<0){
+
+                    (*mais_jov_desb)->esquerda = rotacao_esquerda(&((*mais_jov_desb)->esquerda));
+
+                    (*mais_jov_desb) = rotacao_direita(mais_jov_desb);
+
+                }
+            }//simetria
+            else if((*mais_jov_desb)->balanceamento<0){
+                printf("[DEBUG] mais jovem desbalanceado e o %d, fv = %d\n", item_get_chave((*mais_jov_desb)->item),(*mais_jov_desb)->balanceamento);
+
+                if((*mais_jov_desb)->direita<=0){
+                    *mais_jov_desb = rotacao_esquerda(mais_jov_desb);
+                }else if((*mais_jov_desb)->direita>0){
+                    (*mais_jov_desb)->direita = rotacao_direita(&((*mais_jov_desb)->direita));
+                    *mais_jov_desb = rotacao_esquerda(mais_jov_desb);
+                }
+            }
+        }
     }
     return false;
 }
 
+void troca_max_esq(NO* raiz, NO* atual, NO* ant){
+    if(atual->direita==NULL){
+        if(raiz == ant){
+            raiz->esquerda=atual->esquerda;
+        }else{
+            ant->direita=atual->esquerda;
+        }
+        ITEM* apagar = raiz->item;
+        raiz->item = atual->item;
+        item_apagar(apagar);
+        free(atual);
+        atual=NULL;
+
+    }else{
+        troca_max_esq(raiz,atual->direita,atual);
+    }
+}
+
+bool avl_remover(AVL* avl, int chave){
+    NO* no = avl_remover_rec(&(avl->raiz), chave);
+    if(no!=NULL){
+    printf("[DEBUG] removeu o nó %d",item_get_chave(no->item));
+    }
+}
+NO* avl_remover_rec(NO** no, int chave){
+    if(no==NULL){
+        return NULL;
+    }
+    if(chave==item_get_chave((*no)->item)){
+        //remover
+    }
+    if(chave<item_get_chave((*no)->item)){
+        (*no)->esquerda = avl_remover_rec(&((*no)->esquerda),chave);
+    }else if(item_get_chave((*no)->item)>chave){
+        (*no)->direita = avl_remover_rec(&((*no)->direita),chave);
+    }
+
+
+    if((*no)->item->balanceamento>1||(*no)->item->balanceamento<-1){
+        if((*no)->balanceamento>0){
+            if((*no)->esquerda->balanceamento>=0){
+                (*no) = rotacao_direita(no);
+            }else if((*no)->esquerda->balanceamento<0){
+                (*no)->esquerda = rotacao_esquerda(&((*no)->esquerda));
+                (*no) = rotacao_direita(no);
+            }
+        }//simetria
+        else if((*no)->balanceamento<0){
+
+            if((*no)->direita<=0){
+                *no = rotacao_esquerda(no);
+            }else if((*no)->direita>0){
+                (*no)->direita = rotacao_direita(&((*no)->direita));
+                *no = rotacao_esquerda(no);
+            }
+        }
+    }
+
+}
 
 int calcular_balanceamento_recursivo(NO* no){
     if(no==NULL){
@@ -77,79 +221,43 @@ void calcular_balanceamento(AVL* avl){
         int balanceamento_da_raiz = calcular_balanceamento_recursivo(avl->raiz);
     }
 }
-
-void trocar(NO* a_ser_trocado, NO* por_no_lugar){
-    NO aux = *a_ser_trocado;
-    *a_ser_trocado = *por_no_lugar;
-    *por_no_lugar = aux;
+bool no_remover(NO** no){
+    if((*no)!=NULL){
+        free(*no);
+        (*no)=NULL;
+        return true;
+    }
+    return false;
 }
-NO* mais_a_direita(NO* raiz){
+
+
+NO** mais_a_direita(NO* raiz){
     if(raiz->direita==NULL){
-        return raiz;
+        return &raiz;
     }
     return mais_a_direita(raiz->direita);
 }
-NO* mais_a_esquerda(NO* raiz){
+NO** mais_a_esquerda(NO* raiz){
     if(raiz->esquerda==NULL){
-        return raiz;
+        return &raiz;
     }
     return mais_a_esquerda(raiz->esquerda);
 }
-
-
-
-NO* procurar(NO* r, int n){
+NO** procurar(NO* r, int n){
     if(r==NULL){
-        return r;
+        return NULL;
     }
     if(item_get_chave(r->item)>n){
         return procurar(r->esquerda,n);
     }else if(item_get_chave(r->item)<n){
         return procurar(r->direita,n);
     }else{
-        return r;
+        return &r;
     }
 }
 
-bool avl_remover(AVL* avl, int n){
-    if(avl!=NULL){
-        NO* no_pra_remover = procurar(avl->raiz, n);
-        if(no_pra_remover==NULL){
-            return false;
-        }
-        if(no_pra_remover->esquerda!=NULL){
-            NO* por_no_lugar;
-            if(no_pra_remover->esquerda->direita!=NULL){
-                por_no_lugar = mais_a_direita(no_pra_remover->esquerda);
-            }else{
-                por_no_lugar = no_pra_remover->esquerda;
-            }
-        }else if(no_pra_remover->direita!=NULL){
-            //vai pegar o mais a esquerda do no da direita
-            NO* por_no_lugar;
-            if(no_pra_remover->direita->esquerda!=NULL){
-                por_no_lugar = mais_a_esquerda(no_pra_remover->direita);
-            }else{
-                por_no_lugar = no_pra_remover->direita;
-            }
-        }else{
-            free(no_pra_remover);
-            no_pra_remover=NULL;
-        }
-    }
-}
 
-/*bool debug_achar_no(AVL* avl,int n){
-    if(avl!=NULL){
-        NO* no_procurado = procurar(avl->raiz,n);
-        if(no_procurado==NULL){
-            return false;
-        }
-        printf("\n[DEBUG] no_procurado: %d\n", item_get_chave(no_procurado->item));
-        return true;
-    }
-    return false;
-}*/
+
 
 void debug_printar_pos_ordem_recursivo(NO* no){
     if(no!=NULL){
@@ -163,6 +271,17 @@ void debug_printar_pos_ordem(AVL* avl){
         debug_printar_pos_ordem_recursivo(avl->raiz);
     }
 }
+/*bool debug_achar_no(AVL* avl,int n){
+    if(avl!=NULL){
+        NO* no_procurado = procurar(avl->raiz,n);
+        if(no_procurado==NULL){
+            return false;
+        }
+        printf("\n[DEBUG] no_procurado: %d\n", item_get_chave(no_procurado->item));
+        return true;
+    }
+    return false;
+}*/
 void debug_printar_balanceamento_pos_ordem_recursivo(NO* no){
     if(no!=NULL){
         debug_printar_balanceamento_pos_ordem_recursivo(no->esquerda);
